@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends Controller
 {
@@ -17,6 +18,10 @@ class CommentController extends Controller
 
     public function store(Request $request)
     {
+        // Authorize the user to create a comment
+    if (Gate::denies('create-comment')) {
+        abort(403, 'Unauthorized action.');
+    }
         $validatedData = $request->validate([
             'name' => 'required',
             'body' => 'required',
@@ -50,6 +55,12 @@ class CommentController extends Controller
     public function update(Request $request, $id)
 {
     $comment = Comment::findOrFail($id);
+
+    // Authorize the user to update the comment
+    if (Gate::denies('update-comment', $comment)) {
+        abort(403, 'Unauthorized action.');
+    }
+
 
     $validatedData = $request->validate([
         'body' => 'required|string', // Assuming 'body' is the name of the textarea input in your form.
